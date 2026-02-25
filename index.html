@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Escape From Reality 😂</title>
+<style>
+body {
+  margin: 0;
+  overflow: hidden;
+  background: skyblue;
+}
+canvas {
+  display: block;
+}
+</style>
+</head>
+<body>
+
+<canvas id="gameCanvas"></canvas>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+canvas.width = 400;
+canvas.height = 600;
+
+let birdY = 300;
+let gravity = 0.6;
+let velocity = 0;
+let pipes = [];
+let score = 0;
+let gameOver = false;
+
+// Bird Image
+let birdImg = new Image();
+birdImg.src = "allen.jpg";
+
+// Pipe Image
+let pipeImg = new Image();
+pipeImg.src = "pipe.jpg";
+
+function drawBird() {
+  ctx.drawImage(birdImg, 80, birdY - 20, 50, 50);
+}
+
+function createPipe() {
+  let height = Math.random() * 250 + 50;
+  pipes.push({
+    x: 400,
+    top: height,
+    bottom: height + 140
+  });
+}
+
+function drawPipes() {
+  pipes.forEach(pipe => {
+    ctx.drawImage(pipeImg, pipe.x, 0, 50, pipe.top);
+    ctx.drawImage(pipeImg, pipe.x, pipe.bottom, 50, 600 - pipe.bottom);
+  });
+}
+
+function updatePipes() {
+  pipes.forEach(pipe => pipe.x -= 2);
+}
+
+function checkCollision() {
+  for (let pipe of pipes) {
+    if (
+      80 + 50 > pipe.x &&
+      80 < pipe.x + 50 &&
+      (birdY - 20 < pipe.top || birdY + 20 > pipe.bottom)
+    ) {
+      gameOver = true;
+    }
+  }
+
+  // Hit ground or top
+  if (birdY > 580 || birdY < 0) {
+    gameOver = true;
+  }
+}
+
+function update() {
+  ctx.clearRect(0, 0, 400, 600);
+
+  if (!gameOver) {
+    velocity += gravity;
+    birdY += velocity;
+
+    drawBird();
+    drawPipes();
+    updatePipes();
+    checkCollision();
+
+    ctx.fillStyle = "black";
+    ctx.font = "20px Arial";
+    ctx.fillText("Score: " + score, 10, 30);
+
+    requestAnimationFrame(update);
+  } else {
+    ctx.fillStyle = "red";
+    ctx.font = "30px Arial";
+    ctx.fillText("Allen got justice 😌", 30, 250);
+    ctx.fillText("Score: " + score, 120, 300);
+  }
+}
+
+setInterval(() => {
+  if (!gameOver) {
+    createPipe();
+    score++;
+  }
+}, 2000);
+
+// Tap to jump (Mobile)
+document.addEventListener("touchstart", () => {
+  if (!gameOver) {
+    velocity = -10;
+  } else {
+    // Restart Game
+    birdY = 300;
+    velocity = 0;
+    pipes = [];
+    score = 0;
+    gameOver = false;
+    update();
+  }
+});
+
+update();
+</script>
+
+</body>
+</html>
